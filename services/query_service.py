@@ -3,14 +3,23 @@ from database.mysql import db_session
 import pandas as pd
 from utils.decorators import retry
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class QueryService:
     @staticmethod
     @retry(max_retries=5, delay=1)
     def execute_raw_sql(session, sql: str, params=None):
+        logger.info(f'excute raw sql: {sql}')    
         try:
             result = session.execute(text(sql), params)
-            return result.fetchall()
+            session.commit()
+            return result.rowcount
+        except Exception as e:
+            session.rollback()
+            raise e
         finally:
             session.close()
 

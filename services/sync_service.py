@@ -1,12 +1,56 @@
-from services.update_service import UpdateService
 from services.update_strategy import UpdateStrategy
 from . import const as c
+from utils.decorators import retry
+from sqlalchemy.dialects.mysql import insert
+from datetime import datetime
 
+import time
 import logging
+
 
 logger = logging.getLogger(__name__)
 
 class SyncService:
+    def __init__(self, session):
+        self.session = session
+
+    @retry(max_retries=5, delay=1)
+    def full_update(self, table_class, data_list):
+        """
+        全量更新：删除表中所有数据，插入新数据
+        :param table_class: 表对应的 SQLAlchemy ORM 类
+        :param data_list: 待插入的数据列表
+        """
+        session = self.session()
+        try:
+            with session.begin_nested():
+                session.query(table_class).delete()
+                for data in data_list:
+                    time.sleep(0)
+                    new_record = table_class(**data)
+                    session.add(new_record)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.remove()
+
+    @retry(max_retries=5, delay=1)
+    def incremental_update(self, table_class, data_list):
+        session = self.session()
+        try:
+            for data in data_list:
+                time.sleep(0)
+                insert_stmt = insert(table_class).values(**data)
+                update_stmt = {key: insert_stmt.inserted[key] for key in data}
+                session.execute(insert_stmt.on_duplicate_key_update(**update_stmt))
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.remove()
 
     @staticmethod
     def get_data_fetcher(table_class):
@@ -19,8 +63,7 @@ class SyncService:
         fetcher_class = getattr(module, class_name)
         return fetcher_class()
 
-    @staticmethod
-    def update_table(table_class, strategy: UpdateStrategy, **kwargs):
+    def update_table(self, table_class, strategy: UpdateStrategy, **kwargs):
         data_fetcher = SyncService.get_data_fetcher(table_class)
         data_list = data_fetcher.fetch_data(**kwargs)
         logger.info(f'Data for table {table_class.__tablename__} GETODAZE!!!')
@@ -32,14 +75,13 @@ class SyncService:
         logger.info(f'{strategy} update table {table_class.__tablename__}')
         try:
             if strategy == UpdateStrategy.FULL:
-                UpdateService.full_update(table_class, data_list)
+                self.full_update(table_class, data_list)
             elif strategy == UpdateStrategy.INCREMENTAL:
-                UpdateService.incremental_update(table_class, data_list)
+                self.incremental_update(table_class, data_list)
         except Exception as e:
             raise e
 
-    @staticmethod
-    def update_multiple_table(table_class, strategy, **kwargs):
+    def update_multiple_table(self, table_class, strategy, **kwargs):
         data_fetcher = SyncService.get_data_fetcher(table_class)
         data_list = data_fetcher.fetch_data(**kwargs)
         logger.info(f'Data for table {table_class.__tablename__} GETODAZE')
@@ -52,8 +94,8 @@ class SyncService:
             logger.info(f'{value} update table {key.__tablename__}')
             try:
                 if value == UpdateStrategy.FULL:
-                    UpdateService.full_update(key, data_list[index])
+                    self.full_update(key, data_list[index])
                 elif value == UpdateStrategy.INCREMENTAL:
-                    UpdateService.incremental_update(key, data_list[index])
+                    self.incremental_update(key, data_list[index])
             except Exception as e:
                 raise e
