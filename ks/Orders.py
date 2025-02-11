@@ -22,17 +22,3 @@ class OrdersApi(KsClient):
             'pcursor': pcursor
         }
         return self._request(c.GET, c.CPS_ORDER, access_token, params)
-
-        # result = []
-        # while params['pcursor'] != 'nomore':
-        #     response = self._request(
-        #         method=c.GET, access_token=access_token, api_name=c.CPS_ORDER, params=params
-        #     )
-        #     if response['msg'] == 'success':
-        #         result = result + response['data']['orderView']
-        #         params['pcursor'] = response['data']['pcursor']
-        #         continue
-        #     else:
-        #         break
-
-        # return result

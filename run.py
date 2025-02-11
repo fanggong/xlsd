@@ -1,4 +1,8 @@
-from scheduler.task_scheduler import start_scheduler
+from scheduler.scheduler import start_scheduler
+import logging
 
-if __name__ == "__main__":
+logging.basicConfig(level=logging.INFO)
+
+if __name__ == '__main__':
     start_scheduler()
+

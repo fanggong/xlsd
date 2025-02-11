@@ -16,38 +16,35 @@ class SyncService:
 
     @retry(max_retries=5, delay=1)
     def full_update(self, table_class, data_list):
-        """
-        全量更新：删除表中所有数据，插入新数据
-        :param table_class: 表对应的 SQLAlchemy ORM 类
-        :param data_list: 待插入的数据列表
-        """
-        session = self.session()
+        logger.info(f'full update sync table {table_class}...')
+        session = self.session
         try:
-            with session.begin_nested():
-                session.query(table_class).delete()
+            with session().begin_nested():
+                session().query(table_class).delete()
                 for data in data_list:
                     time.sleep(0)
                     new_record = table_class(**data)
-                    session.add(new_record)
-            session.commit()
+                    session().add(new_record)
+            session().commit()
         except Exception as e:
-            session.rollback()
+            session().rollback()
             raise e
         finally:
             session.remove()
 
     @retry(max_retries=5, delay=1)
     def incremental_update(self, table_class, data_list):
-        session = self.session()
+        logger.info(f'incremental update sync table {table_class}...')
+        session = self.session
         try:
             for data in data_list:
                 time.sleep(0)
                 insert_stmt = insert(table_class).values(**data)
                 update_stmt = {key: insert_stmt.inserted[key] for key in data}
-                session.execute(insert_stmt.on_duplicate_key_update(**update_stmt))
-            session.commit()
+                session().execute(insert_stmt.on_duplicate_key_update(**update_stmt))
+            session().commit()
         except Exception as e:
-            session.rollback()
+            session().rollback()
             raise e
         finally:
             session.remove()

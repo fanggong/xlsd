@@ -1,5 +1,4 @@
 from sqlalchemy import text
-from database.mysql import db_session
 import pandas as pd
 from utils.decorators import retry
 
@@ -14,14 +13,14 @@ class QueryService:
     def execute_raw_sql(session, sql: str, params=None):
         logger.info(f'excute raw sql: {sql}')    
         try:
-            result = session.execute(text(sql), params)
-            session.commit()
+            result = session().execute(text(sql), params)
+            session().commit()
             return result.rowcount
         except Exception as e:
-            session.rollback()
+            session().rollback()
             raise e
         finally:
-            session.close()
+            session().close()
 
     @staticmethod
     @retry(max_retries=5, delay=1)
@@ -30,4 +29,4 @@ class QueryService:
             connection = session.connection()
             return pd.read_sql(text(sql), con=connection, params=params)
         finally:
-            session.close()
+            session().close()
