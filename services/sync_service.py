@@ -58,15 +58,15 @@ class SyncService:
         module_name, class_name = fetcher_class_path.rsplit('.', 1)
         module = __import__(module_name, fromlist=[class_name])
         fetcher_class = getattr(module, class_name)
-        return fetcher_class()
+        return fetcher_class
 
-    def update_table(self, table_class, strategy: UpdateStrategy, **kwargs):
+    def update_table(self, table_class, strategy: UpdateStrategy, init_fetcher, **kwargs):
         data_fetcher = SyncService.get_data_fetcher(table_class)
-        data_list = data_fetcher.fetch_data(**kwargs)
+        data_list = data_fetcher(**init_fetcher).fetch_data(**kwargs)
         logger.info(f'Data for table {table_class.__tablename__} GETODAZE!!!')
 
         if not data_list:
-            logger.info('No data to update for table:', table_class.__tablename__)
+            logger.info(f'No data to update for table: {table_class.__tablename__}')
             return
 
         logger.info(f'{strategy} update table {table_class.__tablename__}')
