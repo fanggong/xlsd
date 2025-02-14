@@ -1,5 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from scheduler.triggers import get_trigger
+from scheduler.triggers import get_trigger, get_ten_minute_trigger
 from tasks.sync_ods_cps_order import sync_ods_cps_order
 from datetime import datetime, timedelta
 
@@ -10,7 +10,7 @@ def register_jobs(scheduler: BackgroundScheduler):
     scheduler.add_job(
         sync_ods_cps_order, 
         id='sync_ods_cps_order',
-        trigger=get_trigger(),
+        trigger=get_ten_minute_trigger(),
         executor='processpool',
         jobstore='default',
         max_instances=10, 
