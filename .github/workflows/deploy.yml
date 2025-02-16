@@ -21,7 +21,7 @@ jobs:
           FOLDER: ./
           SERVER_IP: ${{ secrets.SSH_HOST }} 
           USERNAME: ${{ secrets.SSH_USERNAME }} 
-          SERVER_DESTINATION: /srv/feishu/
+          SERVER_DESTINATION: /srv/xlsd/
 
       - name: Update environment
         uses: fanggong/ssh-action@master
