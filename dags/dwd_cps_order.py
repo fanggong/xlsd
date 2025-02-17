@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.providers.mysql.operators.mysql import MySqlOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.utils.dates import days_ago
 from . import utils as u
 
@@ -13,7 +13,7 @@ dag = DAG(
 )
 
 
-dwd_cps_order_task = MySqlOperator(
+dwd_cps_order_task = SQLExecuteQueryOperator(
     task_id='dwd_cps_order',
     mysql_conn_id='airflow_db',
     sql=u.read_sql_file('sql/dwd/dwd_cps_order.sql'),  # 执行的 SQL 查询
