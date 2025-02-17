@@ -15,7 +15,7 @@ dag = DAG(
 
 dwd_cps_order_task = MySqlOperator(
     task_id='dwd_cps_order',
-    mysql_conn_id='mysql',
+    mysql_conn_id='airflow_db',
     sql=u.read_sql_file('sql/dwd/dwd_cps_order.sql'),  # 执行的 SQL 查询
     autocommit=True,  # 确保事务自动提交
     dag=dag,
