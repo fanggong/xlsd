@@ -21,7 +21,7 @@ jobs:
           FOLDER: ./
           SERVER_IP: ${{ secrets.SSH_HOST }} 
           USERNAME: ${{ secrets.SSH_USERNAME }} 
-          SERVER_DESTINATION: /srv/feishu/
+          SERVER_DESTINATION: /srv/xlsd/
 
       - name: Update environment
         uses: fanggong/ssh-action@master
@@ -30,8 +30,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            # conda env update -f /srv/feishu/environment.yml
-            cp /root/config.yml /srv/feishu/config.yml
-            # cd /srv/feishu
-            # chmod +x deploy.sh
-            # ./deploy.sh
+            conda activate xlsd
+            pip3 install -r /srv/xlsd/requirements.txt
+            cp /root/config_xlsd.yml /srv/xlsd/config_xlsd.yml
+            

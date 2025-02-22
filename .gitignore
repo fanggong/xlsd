@@ -3,6 +3,7 @@ __pycache__
 
 
 config.yml
+config_xlsd.yml
 airflow.cfg
 
 docker-compose.yml
