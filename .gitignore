@@ -4,3 +4,6 @@ __pycache__
 
 config.yml
 airflow.cfg
+
+docker-compose.yml
+logs/*
