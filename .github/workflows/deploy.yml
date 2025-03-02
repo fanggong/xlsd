@@ -32,5 +32,5 @@ jobs:
           script: |
             conda activate xlsd
             pip3 install -r /srv/xlsd/requirements.txt
-            cp /root/config_xlsd.yml /srv/xlsd/config_xlsd.yml
+            cp /root/config.yml /srv/xlsd/config.yml
             
