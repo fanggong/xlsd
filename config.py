@@ -10,7 +10,7 @@ class Config:
 
     @classmethod
     def get_mysql_url(cls):
-        config = cls.load_config()['database']['mysql_own']
+        config = cls.load_config()['database']['mysql_fanxing']
         return f"mysql+pymysql://{config['username']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
 
     @classmethod
